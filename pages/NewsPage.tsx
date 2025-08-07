@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchCommunityNews } from '../services/geminiService';
-import { getBlogPosts } from '../services/api';
+// getBlogPosts temporarily disabled - to be implemented with Netlify functions
 import { NewsArticle, BlogPost } from '../types';
 import { useAppContext } from '../context/AppContext';
 import Spinner from '../components/Spinner';
@@ -49,7 +49,7 @@ const NewsPage: React.FC = () => {
             try {
                 const [fetchedNews, fetchedBlogPosts] = await Promise.all([
                     fetchCommunityNews(),
-                    getBlogPosts(),
+                    Promise.resolve([]), // getBlogPosts temporarily disabled
                 ]);
                 setNews(fetchedNews);
                 setBlogPosts(fetchedBlogPosts);

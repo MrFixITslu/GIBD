@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
       {/* Featured Businesses Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Show mock data banner if using sample data */}
+
 
           
           <div className="text-center mb-16">

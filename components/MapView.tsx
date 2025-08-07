@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getMapUrl } from '../services/api';
+// Using Google Maps embed directly instead of API endpoint
 import Spinner from './Spinner';
 
 interface MapViewProps {
@@ -12,17 +12,10 @@ const MapView: React.FC<MapViewProps> = ({ lat, lng }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUrl = async () => {
-      try {
-        setError(null);
-        const { url } = await getMapUrl(lat, lng);
-        setMapUrl(url);
-      } catch (e: any) {
-        setError(e.message || "Could not load map.");
-        console.error("Map fetch error:", e);
-      }
-    };
-    fetchUrl();
+    // Generate Google Maps embed URL directly
+    const embedUrl = `https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&q=${lat},${lng}&zoom=15`;
+    setMapUrl(embedUrl);
+    setError(null);
   }, [lat, lng]);
 
   if (error) {

@@ -103,7 +103,7 @@ interface AppContextType {
   events: Event[];
   isLoading: boolean;
   appError: string | null;
-  isUsingMockData: boolean;
+
   addBusiness: (businessData: Omit<Business, 'id' | 'rating' | 'votes' | 'ownerId'>) => Promise<void>;
   updateBusiness: (businessId: string, updatedData: UpdatableBusinessData) => Promise<void>;
   voteForBusiness: (businessId: string) => void;
@@ -125,7 +125,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [isLoading, setIsLoading] = useState(true);
   const [appError, setAppError] = useState<string | null>(null);
-  const [isUsingMockData, setIsUsingMockData] = useState(false);
+
   
   const [votedBusinessIds, setVotedBusinessIds] = useState<Set<string>>(() => {
     const savedVotes = sessionStorage.getItem('gimd-votes');
@@ -150,11 +150,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setEvents(eventData);
         setAppError(null);
         
-        setIsUsingMockData(false);
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
         setAppError("Could not connect to the server. Please try again later.");
-        setIsUsingMockData(false);
       } finally {
         setIsLoading(false);
       }
@@ -248,7 +246,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     language, setLanguage, t,
     isAuthenticated, currentUser, login, register, logout,
     businesses, events,
-    isLoading, appError, isUsingMockData,
+    isLoading, appError,
     addBusiness, updateBusiness,
     voteForBusiness, hasVotedFor, totalVotes,
     addEvent, deleteEvent
@@ -256,7 +254,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     language, setLanguage, t,
     isAuthenticated, currentUser, login, register, logout,
     businesses, events,
-    isLoading, appError, isUsingMockData,
+    isLoading, appError,
     addBusiness, updateBusiness,
     voteForBusiness, hasVotedFor, totalVotes,
     addEvent, deleteEvent
