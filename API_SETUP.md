@@ -45,3 +45,4 @@ The error `"API key not valid"` occurs because:
 
 Once you set a real API key, this error will disappear and AI features will work properly.
 
+

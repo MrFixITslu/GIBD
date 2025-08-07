@@ -150,14 +150,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setEvents(eventData);
         setAppError(null);
         
-        // Check if we're using mock data by looking for specific mock data markers
-        const isMock = bizData.some(b => b.name === 'Sunset Beach Bar & Grill') && 
-                     eventData.some(e => e.title === 'Friday Night Street Party');
-        setIsUsingMockData(isMock);
+        setIsUsingMockData(false);
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
-        setAppError("Could not connect to the server. Using sample data for demonstration.");
-        setIsUsingMockData(true);
+        setAppError("Could not connect to the server. Please try again later.");
+        setIsUsingMockData(false);
       } finally {
         setIsLoading(false);
       }
