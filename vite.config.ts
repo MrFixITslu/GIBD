@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      // Expose environment variables to the client
+      envPrefix: 'VITE_'
     };
 });

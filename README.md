@@ -182,16 +182,60 @@ npm start
 
 ## 🚀 Deployment
 
-### Frontend Deployment (Vercel/Netlify)
-```bash
-npm run build
-# Deploy the dist/ folder
-```
+### Frontend Deployment (Netlify)
 
-### Backend Deployment (Railway/Render)
+1. **Connect your repository to Netlify**
+   - Go to [Netlify](https://netlify.com)
+   - Connect your GitHub repository
+   - Netlify will automatically detect the build settings from `netlify.toml`
+
+2. **Set Environment Variables in Netlify**
+   - Go to Site settings > Environment variables
+   - Add `VITE_API_URL` with your backend server URL
+   - Example: `https://your-backend-domain.com/api`
+
+3. **Deploy**
+   - Netlify will automatically build and deploy on every push to main branch
+   - The build command is: `npm run build`
+   - The publish directory is: `dist`
+
+### Backend Deployment (Railway/Render/Heroku)
+
+1. **Deploy to Railway**
+   ```bash
+   # Install Railway CLI
+   npm install -g @railway/cli
+   
+   # Login and deploy
+   railway login
+   railway init
+   railway up
+   ```
+
+2. **Deploy to Render**
+   - Connect your repository to Render
+   - Set build command: `npm install && npm run build`
+   - Set start command: `node dist/server.js`
+   - Add environment variables in Render dashboard
+
+3. **Environment Variables for Backend**
+   ```
+   NODE_ENV=production
+   PORT=3001
+   JWT_SECRET=your-secure-jwt-secret-32-chars-min
+   API_KEY=your-gemini-api-key
+   GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+   CORS_ORIGIN=https://your-frontend-domain.netlify.app
+   ```
+
+### Docker Deployment
+
 ```bash
-# Set environment variables
-# Deploy the server.ts file
+# Build the Docker image
+docker build -t gibd-app .
+
+# Run the container
+docker run -p 3001:3001 -e NODE_ENV=production gibd-app
 ```
 
 ## 🤝 Contributing

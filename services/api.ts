@@ -1,6 +1,6 @@
 import { Business, Event, UpdatableBusinessData, User, BlogPost, ItinerarySuggestions, NewsArticle } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api'; // In real app, use env var
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
