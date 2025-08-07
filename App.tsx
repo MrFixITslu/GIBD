@@ -55,9 +55,14 @@ function App() {
     <ErrorBoundary>
       <AppProvider>
         <HashRouter>
-          <div className="flex flex-col min-h-screen bg-sandy-beige">
+          <div className="flex flex-col min-h-screen bg-neutral-50">
+            {/* Skip Link for Accessibility */}
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
+            
             <Header />
-            <main className="flex-grow flex flex-col">
+            <main id="main-content" className="flex-grow flex flex-col">
               <AppContent />
             </main>
             <Footer />

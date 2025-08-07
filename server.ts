@@ -519,14 +519,20 @@ servicesRouter.get('/map-url', (req, res) => {
  */
 servicesRouter.get('/town-info', async (req, res, next) => {
     if (!ai) {
-        return res.json({ text: "Gros-Islet is famous for its Friday Night Street Party, where locals and visitors enjoy amazing food and music. It's the heart of our community's vibrant culture!" });
+        return res.json({ 
+            text: "Gros-Islet is famous for its Friday Night Street Party, where locals and visitors enjoy amazing food and music. It's the heart of our community's vibrant culture and a must-visit destination in St. Lucia!" 
+        });
     }
     try {
         const prompt = `You are a friendly tour guide for Gros-Islet, St. Lucia. A visitor asked to learn about the town. Provide a warm, concise response (3-4 sentences) sharing an interesting fact about its culture or history.`;
         const response = await ai.models.generateContent({ model: GEMINI_FLASH_MODEL, contents: prompt });
         res.json({ text: response.text });
     } catch (error) {
-        next(error);
+        logger.error('Town info API error:', error);
+        // Return fallback data on error
+        res.json({ 
+            text: "Gros-Islet is famous for its Friday Night Street Party, where locals and visitors enjoy amazing food and music. It's the heart of our community's vibrant culture and a must-visit destination in St. Lucia!" 
+        });
     }
 });
 
