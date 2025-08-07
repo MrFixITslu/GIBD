@@ -6,9 +6,10 @@ import { ROUTES } from '../constants';
 import BusinessCard from '../components/BusinessCard';
 import EventCard from '../components/EventCard';
 import RegisterBusinessCTA from '../components/RegisterBusinessCTA';
+import MockDataBanner from '../components/ui/MockDataBanner';
 
 const HomePage: React.FC = () => {
-  const { t, businesses, events } = useAppContext();
+  const { t, businesses, events, isUsingMockData } = useAppContext();
   const featuredBusinesses = businesses.slice(0, 3);
   const upcomingEvents = events.slice(0, 2);
   const topVotedBusinesses = [...businesses].sort((a, b) => b.votes - a.votes).slice(0, 3);
@@ -45,6 +46,9 @@ const HomePage: React.FC = () => {
       {/* Featured Businesses Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Show mock data banner if using sample data */}
+          {isUsingMockData && <MockDataBanner />}
+          
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">{t('featuredBusinesses')}</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
