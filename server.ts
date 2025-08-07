@@ -110,20 +110,58 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const corsOrigins = config.CORS_ORIGIN.split(',').map(origin => origin.trim());
+const configuredOrigins = config.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean);
+
+const isAllowedOrigin = (origin: string | undefined): boolean => {
+    if (!origin) return true; // allow non-browser tools
+    try {
+        const url = new URL(origin);
+        const hostname = url.hostname;
+        const port = url.port;
+
+        // Always allow configured exact origins
+        if (configuredOrigins.includes(origin)) return true;
+
+        // Allow common local dev patterns
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+        if (isLocalhost) return true;
+
+        // Allow any Netlify preview/production subdomain
+        if (hostname.endsWith('.netlify.app')) return true;
+
+        // Allow your specific production domain
+        if (hostname === 'v79sl.online') return true;
+
+        // Allow any subdomain of your domain
+        if (hostname.endsWith('.v79sl.online')) return true;
+
+        // Optionally allow any http(s) with configured hostname regardless of port
+        for (const allowed of configuredOrigins) {
+            try {
+                const allowedUrl = new URL(allowed);
+                if (allowedUrl.hostname === hostname) return true;
+            } catch { /* ignore */ }
+        }
+
+        return false;
+    } catch {
+        return false;
+    }
+};
+
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        if (corsOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+        if (isAllowedOrigin(origin)) {
+            logger.info(`CORS allowed request from origin: ${origin}`);
+            return callback(null, true);
         }
+        logger.error(`CORS blocked request from origin: ${origin}. Configured origins: ${configuredOrigins.join(', ')}`);
+        return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
 }));
 
 // Rate limiting
