@@ -1,0 +1,155 @@
+
+import { Business, Event, BusinessCategory, BlogPost } from '../types';
+
+export const mockBusinesses: Business[] = [
+  {
+    id: '1',
+    ownerId: 'user-1',
+    name: 'Spinnakers Beach Bar & Grill',
+    category: BusinessCategory.BEACH_BAR,
+    description: 'Iconic beachfront restaurant offering a mix of local and international cuisine with stunning sunset views.',
+    contact: { phone: '1-758-452-8491', email: 'info@spinnakersstlucia.com', website: 'spinnakersstlucia.com' },
+    location: 'Reduit Beach, Rodney Bay, Gros Islet',
+    coordinates: { lat: 14.0765, lng: -60.9509 },
+    hours: { Mon: '9am-11pm', Tue: '9am-11pm', Wed: '9am-11pm', Thu: '9am-11pm', Fri: '9am-1am', Sat: '9am-1am', Sun: '9am-11pm' },
+    images: ['https://picsum.photos/seed/caribbean-beach-bar/800/600', 'https://picsum.photos/seed/beach-restaurant-sunset/800/600'],
+    rating: 4.5,
+    tags: ['live music', 'beachfront', 'happy hour', 'eco-friendly'],
+    offers: 'Happy Hour 5-6pm daily!',
+    votes: 125,
+  },
+  {
+    id: '2',
+    ownerId: 'user-2',
+    name: 'Duke\'s Place',
+    category: BusinessCategory.RESTAURANT,
+    description: 'Authentic St. Lucian home cooking in a cozy, welcoming atmosphere. Famous for our grilled fish and local juices.',
+    contact: { phone: '1-758-450-8363', email: 'dukes@candw.lc' },
+    location: 'Dauphin Street, Gros Islet',
+    coordinates: { lat: 14.0722, lng: -60.9485 },
+    hours: { Mon: 'Closed', Tue: '11am-9pm', Wed: '11am-9pm', Thu: '11am-9pm', Fri: '11am-11pm', Sat: '11am-11pm', Sun: '12pm-8pm' },
+    images: ['https://picsum.photos/seed/local-caribbean-eatery/800/600', 'https://picsum.photos/seed/creole-food-dish/800/600'],
+    rating: 4.8,
+    tags: ['local cuisine', 'family friendly', 'casual'],
+    votes: 210,
+  },
+  {
+    id: '3',
+    ownerId: 'user-3',
+    name: 'Island Mix Art Emporium',
+    category: BusinessCategory.ARTISAN,
+    description: 'A vibrant gallery and shop featuring handmade crafts, jewelry, and art from talented St. Lucian artisans.',
+    contact: { phone: '1-758-452-0424', email: 'islandmix@gmail.com' },
+    location: 'Rodney Bay Marina, Gros Islet',
+    coordinates: { lat: 14.0751, lng: -60.9538 },
+    hours: { Mon: '9am-5pm', Tue: '9am-5pm', Wed: '9am-5pm', Thu: '9am-5pm', Fri: '9am-5pm', Sat: '10am-2pm', Sun: 'Closed' },
+    images: ['https://picsum.photos/seed/caribbean-art-gallery/800/600', 'https://picsum.photos/seed/local-handmade-crafts/800/600'],
+    rating: 4.9,
+    tags: ['souvenirs', 'local art', 'handmade'],
+    votes: 98,
+  },
+  {
+    id: '4',
+    ownerId: 'user-4',
+    name: 'Treetop Adventure Park',
+    category: BusinessCategory.TOUR,
+    description: 'Experience the thrill of zip-lining through the lush rainforest canopy. A must-do for adventure seekers!',
+    contact: { phone: '1-758-458-0908', email: 'reservations@adventuretoursstlucia.com', website: 'adventuretoursstlucia.com' },
+    location: 'Dennery Quarter (near Gros Islet)',
+    coordinates: { lat: 13.921, lng: -60.8902 },
+    hours: { Mon: '8:30am-4pm', Tue: '8:30am-4pm', Wed: '8:30am-4pm', Thu: '8:30am-4pm', Fri: '8:30am-4pm', Sat: '9am-1pm', Sun: 'Closed' },
+    images: ['https://picsum.photos/seed/rainforest-zipline/800/600', 'https://picsum.photos/seed/jungle-canopy-tour/800/600'],
+    rating: 4.7,
+    tags: ['adventure', 'nature', 'zip-lining', 'eco-friendly'],
+    votes: 150,
+  },
+  {
+    id: '5',
+    ownerId: 'user-5',
+    name: 'Bay Gardens Beach Resort',
+    category: BusinessCategory.ACCOMMODATION,
+    description: 'Luxurious beachfront resort with spacious suites, a lagoon-style pool, and exceptional service.',
+    contact: { phone: '1-758-457-8500', email: 'info@baygardensresorts.com', website: 'baygardensresorts.com' },
+    location: 'Reduit Beach, Rodney Bay, Gros Islet',
+    coordinates: { lat: 14.0778, lng: -60.9515 },
+    hours: { Mon: '24/7', Tue: '24/7', Wed: '24/7', Thu: '24/7', Fri: '24/7', Sat: '24/7', Sun: '24/7' },
+    images: ['https://picsum.photos/seed/st-lucia-resort-pool/800/600', 'https://picsum.photos/seed/luxury-beachfront-hotel/800/600'],
+    rating: 4.6,
+    tags: ['luxury', 'beachfront', 'spa', 'family friendly'],
+    votes: 180,
+  },
+  {
+    id: '6',
+    ownerId: 'user-6',
+    name: 'Gros Islet Street Party Vendors',
+    category: BusinessCategory.SHOP,
+    description: 'A collection of vibrant street food stalls and craft vendors at the legendary Friday Night Street Party.',
+    contact: { phone: 'N/A', email: 'N/A' },
+    location: 'Gros Islet Town',
+    // No coordinates for a general area
+    hours: { Fri: '7pm-2am' },
+    images: ['https://picsum.photos/seed/caribbean-street-party/800/600', 'https://picsum.photos/seed/night-food-market/800/600'],
+    rating: 4.4,
+    tags: ['street food', 'nightlife', 'local culture', 'music'],
+    votes: 305,
+  },
+];
+
+
+export const mockEvents: Event[] = [
+  {
+    id: 'e1',
+    title: 'Friday Night Street Party',
+    date: 'Every Friday',
+    time: '7:00 PM - 2:00 AM',
+    description: 'The legendary Gros Islet street party with music, dancing, and delicious street food.',
+    businessId: '6',
+    image: 'https://picsum.photos/seed/st-lucia-street-festival/800/600'
+  },
+  {
+    id: 'e2',
+    title: 'Live Reggae Night',
+    date: 'Every Saturday',
+    time: '8:00 PM - 11:00 PM',
+    description: 'Chill to the vibes of live reggae music on the beach.',
+    businessId: '1',
+    image: 'https://picsum.photos/seed/reggae-band-beach/800/600'
+  },
+  {
+    id: 'e3',
+    title: 'Artisanal Craft Market',
+    date: 'First Saturday of the month',
+    time: '10:00 AM - 2:00 PM',
+    description: 'Discover unique, locally made crafts and art pieces.',
+    businessId: '3',
+    image: 'https://picsum.photos/seed/caribbean-craft-market/800/600'
+  },
+  {
+    id: 'e4',
+    title: 'Creole Cooking Class',
+    date: 'Every Wednesday',
+    time: '4:00 PM - 6:00 PM',
+    description: 'Learn to cook authentic St. Lucian dishes with our head chef.',
+    businessId: '2',
+    image: 'https://picsum.photos/seed/caribbean-cooking-class/800/600'
+  },
+];
+
+export const mockBlogPosts: BlogPost[] = [
+  {
+    id: 'b1',
+    title: 'A Food Lover\'s Guide to Gros-Islet',
+    author: 'St. Lucia Foodies',
+    date: 'August 12, 2024',
+    excerpt: 'From street-side BBQ to fine dining on the waterfront, explore the culinary delights that make Gros-Islet a paradise for your taste buds.',
+    imageUrl: 'https://picsum.photos/seed/gros-islet-food-guide/800/600',
+  },
+  {
+    id: 'b2',
+    title: 'Beyond the Beach: Hiking Pigeon Island',
+    author: 'Adventure Seekers Weekly',
+    date: 'August 5, 2024',
+    excerpt: 'Discover the rich history and breathtaking views from the top of Pigeon Island National Landmark. A must-do for any visitor to the north of St. Lucia.',
+    imageUrl: 'https://picsum.photos/seed/pigeon-island-hike/800/600',
+  }
+];
