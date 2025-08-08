@@ -20,6 +20,10 @@ const handleResponse = async (response: Response) => {
           errorMessage = `Server returned HTML instead of JSON. Status: ${response.status}. This usually means the API endpoint doesn't exist or the server is not running.`;
         } else if (text.includes('Function invocation failed')) {
           errorMessage = `Serverless function error: The backend function failed to execute. This could be due to missing environment variables or database connection issues.`;
+        } else if (text.includes('Database connection not configured')) {
+          errorMessage = `Database not configured. Please set up the database connection in your Netlify environment variables.`;
+        } else if (text.includes('Database connection failed')) {
+          errorMessage = `Database connection failed. Please check your database configuration and credentials.`;
         } else {
           errorMessage = `Server error: ${text.substring(0, 100)}...`;
         }

@@ -163,12 +163,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             errorMessage = "Server error: The backend is returning an invalid response. Please check if the server is running correctly.";
           } else if (error.message.includes('404')) {
             errorMessage = "API endpoint not found. Please check if the backend server is properly configured.";
+          } else if (error.message.includes('Database not configured')) {
+            errorMessage = "Database not configured. Please set up the database connection in your Netlify environment variables.";
+          } else if (error.message.includes('Database connection failed')) {
+            errorMessage = "Database connection failed. Please check your database configuration and credentials.";
           } else {
             errorMessage = `Connection error: ${error.message}`;
           }
         }
         
         setAppError(errorMessage);
+        
+        // Set empty arrays as fallback to prevent further errors
+        setBusinesses([]);
+        setEvents([]);
       } finally {
         setIsLoading(false);
       }

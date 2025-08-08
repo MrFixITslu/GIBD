@@ -7,8 +7,9 @@ export const handler: Handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -27,6 +28,18 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
+    // Check if database URL is configured
+    if (!process.env.NETLIFY_DATABASE_URL) {
+      console.error('NETLIFY_DATABASE_URL is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.' 
+        }),
+      };
+    }
+
     const events = await sql`
       SELECT 
         id,
@@ -47,10 +60,23 @@ export const handler: Handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Get events error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      if (error.message.includes('connection')) {
+        errorMessage = 'Database connection failed. Please check your database configuration.';
+      } else if (error.message.includes('authentication')) {
+        errorMessage = 'Database authentication failed. Please check your database credentials.';
+      } else {
+        errorMessage = `Database error: ${error.message}`;
+      }
+    }
+    
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Internal server error' }),
+      body: JSON.stringify({ message: errorMessage }),
     };
   }
 };

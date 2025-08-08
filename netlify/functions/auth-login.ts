@@ -9,8 +9,9 @@ export const handler: Handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -29,6 +30,18 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
+    // Check if database URL is configured
+    if (!process.env.NETLIFY_DATABASE_URL) {
+      console.error('NETLIFY_DATABASE_URL is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.' 
+        }),
+      };
+    }
+
     const { email, password } = JSON.parse(event.body || '{}');
 
     if (!email || !password) {
@@ -61,10 +74,22 @@ export const handler: Handler = async (event, context) => {
       };
     }
 
+    // Check if JWT secret is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Authentication not configured. Please set JWT_SECRET environment variable.' 
+        }),
+      };
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
