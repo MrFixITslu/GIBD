@@ -144,9 +144,15 @@ const Header: React.FC = () => {
           <div className="lg:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }
+              }}
               className="p-2 rounded-lg text-neutral-700 hover:bg-neutral-100 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200"
               aria-label="Toggle mobile menu"
-              aria-expanded={isMobileMenuOpen ? 'true' : 'false'}
+              aria-expanded={isMobileMenuOpen ? "true" : "false"}
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMobileMenuOpen ? (

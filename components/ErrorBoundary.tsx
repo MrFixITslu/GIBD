@@ -31,6 +31,13 @@ class ErrorBoundary extends Component<Props, State> {
     // Example: Sentry.captureException(error, { extra: errorInfo });
   }
 
+  // Reset error state when props change
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.children !== this.props.children) {
+      this.setState({ hasError: false, error: undefined });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI

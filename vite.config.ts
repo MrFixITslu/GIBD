@@ -14,6 +14,27 @@ export default defineConfig(({ mode }) => {
         }
       },
       // Expose environment variables to the client
-      envPrefix: 'VITE_'
+      envPrefix: 'VITE_',
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              vendor: ['react', 'react-dom'],
+              router: ['react-router-dom'],
+            }
+          }
+        },
+        sourcemap: mode === 'development',
+        minify: mode === 'production',
+      },
+      server: {
+        port: 3000,
+        host: true,
+        headers: {
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+          'X-XSS-Protection': '1; mode=block',
+        }
+      }
     };
 });

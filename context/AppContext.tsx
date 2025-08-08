@@ -195,20 +195,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [language]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { user, token: newToken } = await api.login(email, password);
-    localStorage.setItem('gimd-token', newToken);
-    localStorage.setItem('gimd-user', JSON.stringify(user));
-    setToken(newToken);
-    setCurrentUser(user);
+    try {
+      const { user, token: newToken } = await api.login(email, password);
+      localStorage.setItem('gimd-token', newToken);
+      localStorage.setItem('gimd-user', JSON.stringify(user));
+      setToken(newToken);
+      setCurrentUser(user);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   }, []);
   
   const register = useCallback(async (email: string, password: string) => {
-    const { user, token: newToken } = await api.register(email, password);
-    localStorage.setItem('gimd-token', newToken);
-    localStorage.setItem('gimd-user', JSON.stringify(user));
-    setToken(newToken);
-    setCurrentUser(user);
-    return { user };
+    try {
+      const { user, token: newToken } = await api.register(email, password);
+      localStorage.setItem('gimd-token', newToken);
+      localStorage.setItem('gimd-user', JSON.stringify(user));
+      setToken(newToken);
+      setCurrentUser(user);
+      return { user };
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
   }, []);
 
   const logout = useCallback(() => {
@@ -220,14 +230,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   const addBusiness = useCallback(async (businessData: Omit<Business, 'id' | 'rating' | 'votes' | 'ownerId'>) => {
     if (!token) throw new Error("Authentication required.");
-    const newBusiness = await api.addBusiness(businessData, token);
-    setBusinesses(prev => [newBusiness, ...prev]);
+    try {
+      const newBusiness = await api.addBusiness(businessData, token);
+      setBusinesses(prev => [newBusiness, ...prev]);
+    } catch (error) {
+      console.error('Failed to add business:', error);
+      throw error;
+    }
   }, [token]);
   
   const updateBusiness = useCallback(async (businessId: string, updatedData: UpdatableBusinessData) => {
     if (!token) throw new Error("Authentication required.");
-    const updatedBusiness = await api.updateBusiness(businessId, updatedData, token);
-    setBusinesses(prev => prev.map(b => b.id === businessId ? updatedBusiness : b));
+    try {
+      const updatedBusiness = await api.updateBusiness(businessId, updatedData, token);
+      setBusinesses(prev => prev.map(b => b.id === businessId ? updatedBusiness : b));
+    } catch (error) {
+      console.error('Failed to update business:', error);
+      throw error;
+    }
   }, [token]);
 
   const voteForBusiness = useCallback(async (businessId: string) => {
@@ -235,21 +255,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.warn("Already voted for this business.");
       return;
     }
-    const { votes } = await api.voteForBusiness(businessId);
-    setBusinesses(prev => prev.map(b => b.id === businessId ? { ...b, votes } : b));
-    setVotedBusinessIds(prevIds => new Set(prevIds).add(businessId));
+    try {
+      const { votes } = await api.voteForBusiness(businessId);
+      setBusinesses(prev => prev.map(b => b.id === businessId ? { ...b, votes } : b));
+      setVotedBusinessIds(prevIds => new Set(prevIds).add(businessId));
+    } catch (error) {
+      console.error('Failed to vote for business:', error);
+      throw error;
+    }
   }, [votedBusinessIds]);
   
   const addEvent = useCallback(async (eventData: Omit<Event, 'id' | 'image'>) => {
     if (!token) throw new Error("Authentication required.");
-    const newEvent = await api.addEvent(eventData, token);
-    setEvents(prev => [newEvent, ...prev]);
+    try {
+      const newEvent = await api.addEvent(eventData, token);
+      setEvents(prev => [newEvent, ...prev]);
+    } catch (error) {
+      console.error('Failed to add event:', error);
+      throw error;
+    }
   }, [token]);
   
   const deleteEvent = useCallback(async (eventId: string) => {
     if (!token) throw new Error("Authentication required.");
-    await api.deleteEvent(eventId, token);
-    setEvents(prev => prev.filter(e => e.id !== eventId));
+    try {
+      await api.deleteEvent(eventId, token);
+      setEvents(prev => prev.filter(e => e.id !== eventId));
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      throw error;
+    }
   }, [token]);
 
   const hasVotedFor = useCallback((businessId: string): boolean => {

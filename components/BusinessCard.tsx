@@ -18,10 +18,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ business }) => {
   return (
     <Card href={`/business/${business.id}`} interactive elevation="md" className="group">
       <CardImage 
-        src={business.images[0]} 
+        src={business.images[0] || '/placeholder-business.jpg'} 
         alt={business.name}
         aspectRatio="video"
         className="group-hover:scale-105 transition-transform duration-300"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/placeholder-business.jpg';
+        }}
       />
       <CardBody className="space-y-3">
         <div className="flex items-center justify-between">

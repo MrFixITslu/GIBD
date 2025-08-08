@@ -155,6 +155,25 @@
       };
     </script>
 
+    <!-- Accessibility Styles -->
+    <style>
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: #000;
+        color: white;
+        padding: 8px;
+        text-decoration: none;
+        border-radius: 4px;
+        z-index: 1000;
+        transition: top 0.3s;
+      }
+      .skip-link:focus {
+        top: 6px;
+      }
+    </style>
+
     <!-- ES Module Import Map -->
     <script type="importmap">
 {
@@ -166,7 +185,7 @@
     "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
     "react/": "https://esm.sh/react@^19.1.0/",
     "express": "https://esm.sh/express@^5.1.0",
-    "cors": "https://esm.sh/cors@^2.8.5",
+    "cors": "https://esm.sh/cors@^5.1.0",
     "jsonwebtoken": "https://esm.sh/jsonwebtoken@^9.0.2"
   }
 }

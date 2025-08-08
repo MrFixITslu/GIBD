@@ -47,77 +47,140 @@ const getAuthHeaders = (token: string) => ({
 
 // --- Auth ---
 export const login = async (email: string, password: string): Promise<{ user: {id: string, email: string}, token: string }> => {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  return handleResponse(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    return handleResponse(response);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 export const register = async (email: string, password: string): Promise<{ user: {id: string, email: string}, token: string }> => {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  return handleResponse(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    return handleResponse(response);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 
 
 // --- Businesses ---
 export const getBusinesses = async (): Promise<Business[]> => {
-  const response = await fetch(`${API_BASE_URL}/businesses`);
-  return handleResponse(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}/businesses`);
+    return handleResponse(response);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 export const addBusiness = async (businessData: Omit<Business, 'id' | 'rating' | 'votes' | 'ownerId'>, token: string): Promise<Business> => {
-    const response = await fetch(`${API_BASE_URL}/businesses`, {
-        method: 'POST',
-        headers: getAuthHeaders(token),
-        body: JSON.stringify(businessData)
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}/businesses`, {
+          method: 'POST',
+          headers: getAuthHeaders(token),
+          body: JSON.stringify(businessData)
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+      }
+      throw error;
+    }
 };
 
 export const updateBusiness = async (businessId: string, data: UpdatableBusinessData, token: string): Promise<Business> => {
-    const response = await fetch(`${API_BASE_URL}/businesses/${businessId}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(token),
-        body: JSON.stringify(data)
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}/businesses/${businessId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(token),
+          body: JSON.stringify(data)
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+      }
+      throw error;
+    }
 };
 
 export const voteForBusiness = async (businessId: string): Promise<{ id: string; votes: number }> => {
-  const response = await fetch(`${API_BASE_URL}/businesses/${businessId}/vote`, {
-    method: 'POST'
-  });
-  return handleResponse(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}/businesses/${businessId}/vote`, {
+      method: 'POST'
+    });
+    return handleResponse(response);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 // --- Events ---
 export const getEvents = async (): Promise<Event[]> => {
-  const response = await fetch(`${API_BASE_URL}/events`);
-  return handleResponse(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}/events`);
+    return handleResponse(response);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    throw error;
+  }
 };
 
 export const addEvent = async (eventData: Omit<Event, 'id' | 'image'>, token: string): Promise<Event> => {
-    const response = await fetch(`${API_BASE_URL}/events`, {
-        method: 'POST',
-        headers: getAuthHeaders(token),
-        body: JSON.stringify(eventData),
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}/events`, {
+          method: 'POST',
+          headers: getAuthHeaders(token),
+          body: JSON.stringify(eventData),
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+      }
+      throw error;
+    }
 };
 
 export const deleteEvent = async (eventId: string, token: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(token),
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(token),
+      });
+      return handleResponse(response);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+      }
+      throw error;
+    }
 };
 
 // --- Additional Services (to be implemented later if needed) ---
