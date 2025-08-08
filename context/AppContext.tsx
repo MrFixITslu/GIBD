@@ -141,34 +141,68 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      const startTime = Date.now();
+      logger.info('Starting initial data fetch...');
+      
       try {
         setIsLoading(true);
         setAppError(null);
         
-        // Try to fetch data with individual error handling
+        // Try to fetch data with individual error handling and detailed logging
         let bizData: Business[] = [];
         let eventData: Event[] = [];
+        let businessError: Error | null = null;
+        let eventError: Error | null = null;
         
+        // Fetch businesses with detailed error tracking
         try {
+          logger.debug('Attempting to fetch businesses...');
           bizData = await api.getBusinesses();
+          logger.info(`Successfully fetched ${bizData.length} businesses`);
         } catch (bizError) {
-          logger.warn("Failed to fetch businesses:", bizError);
+          businessError = bizError instanceof Error ? bizError : new Error(String(bizError));
+          logger.error("Failed to fetch businesses:", businessError);
           // Don't throw, just use empty array
         }
         
+        // Fetch events with detailed error tracking  
         try {
+          logger.debug('Attempting to fetch events...');
           eventData = await api.getEvents();
-        } catch (eventError) {
-          logger.warn("Failed to fetch events:", eventError);
+          logger.info(`Successfully fetched ${eventData.length} events`);
+        } catch (eventError_) {
+          eventError = eventError_ instanceof Error ? eventError_ : new Error(String(eventError_));
+          logger.error("Failed to fetch events:", eventError);
           // Don't throw, just use empty array
         }
         
-        setBusinesses(bizData);
-        setEvents(eventData);
+        // CRITICAL: Always set data, even if empty
+        setBusinesses(bizData || []);
+        setEvents(eventData || []);
         
-        // Only show error if both failed
-        if (bizData.length === 0 && eventData.length === 0) {
-          setAppError("Unable to load data. The app will work with limited functionality. Check your Netlify function configuration and environment variables.");
+        // Determine appropriate error message based on what failed
+        if (businessError && eventError) {
+          // Both failed - likely system issue
+          const errorDetails = [
+            businessError.message.includes('fetch') ? 'Network connectivity issues' : 'API configuration problem',
+            eventError.message.includes('fetch') ? 'Network connectivity issues' : 'API configuration problem'
+          ];
+          
+          setAppError(`Unable to load data due to: ${errorDetails.join(' and ')}. The app will work with limited functionality. Please check your Netlify function configuration and environment variables.`);
+        } else if (businessError || eventError) {
+          // One failed - partial functionality
+          const failedResource = businessError ? 'businesses' : 'events';
+          const error = businessError || eventError;
+          logger.warn(`Partial data load: ${failedResource} failed but other data loaded successfully`);
+          
+          if (error?.message.includes('fetch')) {
+            setAppError(`Network issue loading ${failedResource}. Some features may be limited.`);
+          } else {
+            setAppError(`Configuration issue with ${failedResource} API. Some features may be limited.`);
+          }
+        } else {
+          // Success case
+          logger.info(`Data fetch completed successfully in ${Date.now() - startTime}ms`);
         }
         
       } catch (error) {

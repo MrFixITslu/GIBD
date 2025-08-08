@@ -1,11 +1,53 @@
 import { Business, Event, UpdatableBusinessData } from '../types';
+import { logger } from '../utils/logger';
 
-// API URL for Netlify functions
+// API URL for Netlify functions with fallback
 const API_BASE_URL = import.meta.env['VITE_API_URL'] || '/api';
 
-// Remove mock data imports since we're using only real backend now
+// Request timeout configuration
+const REQUEST_TIMEOUT = 10000; // 10 seconds
+const MAX_RETRIES = 3;
 
-const handleResponse = async (response: Response) => {
+// Enhanced fetch with timeout and retry logic
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = REQUEST_TIMEOUT): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+};
+
+// Retry logic for failed requests
+const fetchWithRetry = async (url: string, options: RequestInit = {}, retries = MAX_RETRIES): Promise<Response> => {
+  try {
+    return await fetchWithTimeout(url, options);
+  } catch (error) {
+    if (retries > 0 && error instanceof Error) {
+      // Retry on network errors but not on 4xx errors
+      if (error.name === 'AbortError' || error.name === 'TypeError') {
+        logger.warn(`Request failed, retrying... ${retries} attempts left`, { url, error: error.message });
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        return fetchWithRetry(url, options, retries - 1);
+      }
+    }
+    throw error;
+  }
+};
+
+const handleResponse = async (response: Response | null): Promise<any> => {
+  // CRITICAL: Check if response exists
+  if (!response) {
+    throw new Error('Network error: No response received from server');
+  }
   if (!response.ok) {
     let errorMessage = `HTTP error! status: ${response.status}`;
     
@@ -124,9 +166,32 @@ export const register = async (email: string, password: string): Promise<{ user:
 // --- Businesses ---
 export const getBusinesses = async (): Promise<Business[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/businesses`);
-    return handleResponse(response);
+    logger.debug('Fetching businesses from:', `${API_BASE_URL}/businesses`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/businesses`);
+    const data = await handleResponse(response);
+    
+    // CRITICAL: Validate response data structure
+    if (!Array.isArray(data)) {
+      logger.warn('Businesses API returned non-array data:', data);
+      return []; // Return empty array instead of crashing
+    }
+    
+    // Validate each business object
+    const validBusinesses = data.filter((business: any) => {
+      return business && 
+             typeof business.id === 'string' && 
+             typeof business.name === 'string' &&
+             business.category &&
+             business.contact;
+    });
+    
+    if (validBusinesses.length !== data.length) {
+      logger.warn(`Filtered out ${data.length - validBusinesses.length} invalid business objects`);
+    }
+    
+    return validBusinesses as Business[];
   } catch (error) {
+    logger.error('Failed to fetch businesses:', error);
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
     }
@@ -183,9 +248,32 @@ export const voteForBusiness = async (businessId: string): Promise<{ id: string;
 // --- Events ---
 export const getEvents = async (): Promise<Event[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/events`);
-    return handleResponse(response);
+    logger.debug('Fetching events from:', `${API_BASE_URL}/events`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/events`);
+    const data = await handleResponse(response);
+    
+    // CRITICAL: Validate response data structure
+    if (!Array.isArray(data)) {
+      logger.warn('Events API returned non-array data:', data);
+      return []; // Return empty array instead of crashing
+    }
+    
+    // Validate each event object
+    const validEvents = data.filter((event: any) => {
+      return event && 
+             typeof event.id === 'string' && 
+             typeof event.title === 'string' &&
+             typeof event.date === 'string' &&
+             typeof event.businessId === 'string';
+    });
+    
+    if (validEvents.length !== data.length) {
+      logger.warn(`Filtered out ${data.length - validEvents.length} invalid event objects`);
+    }
+    
+    return validEvents as Event[];
   } catch (error) {
+    logger.error('Failed to fetch events:', error);
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
     }

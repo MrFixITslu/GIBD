@@ -8,6 +8,9 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 // CSS is handled by Tailwind CDN in index.html
 
+// CRITICAL: Isolate browser wallet extensions before anything else
+import './utils/walletIsolation';
+
 // 1. Locate the root DOM node. The React application will be rendered inside this element.
 // This element is defined in `index.html`.
 const rootElement = document.getElementById('root');
