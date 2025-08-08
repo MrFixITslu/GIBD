@@ -190,6 +190,49 @@
   
   </head>
   <body class="bg-sandy-beige text-charcoal-gray antialiased">
+    <!-- CRITICAL: Wallet isolation MUST run before any other scripts -->
+    <script>
+      (function() {
+        'use strict';
+        
+        // Block wallet providers IMMEDIATELY
+        const WALLET_PROVIDERS = ['ethereum', 'BinanceChain', 'binance', 'web3', 'trustwallet', 'coinbaseWallet', 'phantom', 'solana', 'okxwallet', 'brave'];
+        
+        WALLET_PROVIDERS.forEach(provider => {
+          try {
+            Object.defineProperty(window, provider, {
+              get: () => undefined,
+              set: () => {},
+              configurable: false,
+              enumerable: false
+            });
+          } catch (e) {}
+        });
+        
+        // Suppress wallet errors IMMEDIATELY
+        const originalError = window.onerror;
+        window.onerror = function(message, source, lineno, colno, error) {
+          if (source && (source.includes('inpage.js') || source.includes('contentscript.js') || source.includes('pageWorld.js'))) {
+            console.debug('[Early-WalletBlock] Suppressed:', message);
+            return true; // Prevent default error handling
+          }
+          return originalError ? originalError.apply(this, arguments) : false;
+        };
+        
+        // Suppress unhandled rejections IMMEDIATELY
+        window.addEventListener('unhandledrejection', function(event) {
+          const reason = String(event.reason || '');
+          if (reason.includes('BinanceChain') || reason.includes('ethereum') || reason.includes('wallet') || reason.includes('isTrust') || reason.includes('type')) {
+            console.debug('[Early-WalletBlock] Suppressed promise rejection:', reason);
+            event.preventDefault();
+            return false;
+          }
+        });
+        
+        console.info('[Early-WalletBlock] Wallet isolation active');
+      })();
+    </script>
+    
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
