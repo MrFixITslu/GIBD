@@ -1,0 +1,41 @@
+# Netlify Ignore File
+# Exclude documentation and example files from secrets scanning
+
+# Documentation files
+*.md
+README.md
+DEPLOYMENT.md
+API_SETUP.md
+FIXES_SUMMARY.md
+NETLIFY_TROUBLESHOOTING_GUIDE.md
+BUG_FIXES_COMPLETE.md
+SECRETS_SCANNING_FIX.md
+
+# Example environment files
+env.*
+env.example
+env.netlify.example
+env.production*
+
+# Backup files
+backup/
+backup/*
+
+# Build artifacts (already in dist, but explicit)
+dist/
+node_modules/
+
+# Configuration files with examples
+Dockerfile
+.dockerignore
+
+# Database files
+*.sql
+database-schema.sql
+
+# Lock files
+package-lock.json
+.netlify/plugins/package-lock.json
+
+# Development files
+src/test/
