@@ -152,7 +152,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
-        setAppError("Could not connect to the server. Please try again later.");
+        
+        // Provide more specific error messages
+        let errorMessage = "Could not connect to the server. Please try again later.";
+        
+        if (error instanceof Error) {
+          if (error.message.includes('Failed to fetch')) {
+            errorMessage = "Network error: Please check your internet connection and ensure the backend server is running.";
+          } else if (error.message.includes('Unexpected token')) {
+            errorMessage = "Server error: The backend is returning an invalid response. Please check if the server is running correctly.";
+          } else if (error.message.includes('404')) {
+            errorMessage = "API endpoint not found. Please check if the backend server is properly configured.";
+          } else {
+            errorMessage = `Connection error: ${error.message}`;
+          }
+        }
+        
+        setAppError(errorMessage);
       } finally {
         setIsLoading(false);
       }

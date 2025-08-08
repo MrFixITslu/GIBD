@@ -7,13 +7,37 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    let errorMessage = `HTTP error! status: ${response.status}`;
+    
+    try {
+      const error = await response.json();
+      errorMessage = error.message || errorMessage;
+    } catch (parseError) {
+      // If response is not JSON (like HTML error page), try to get text
+      try {
+        const text = await response.text();
+        if (text.includes('<!DOCTYPE')) {
+          errorMessage = `Server returned HTML instead of JSON. Status: ${response.status}. This usually means the API endpoint doesn't exist or the server is not running.`;
+        } else {
+          errorMessage = `Server error: ${text.substring(0, 100)}...`;
+        }
+      } catch (textError) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+    }
+    
+    throw new Error(errorMessage);
   }
+  
   if (response.status === 204) { // No Content
     return;
   }
-  return response.json();
+  
+  try {
+    return response.json();
+  } catch (parseError) {
+    throw new Error('Invalid JSON response from server');
+  }
 };
 
 const getAuthHeaders = (token: string) => ({
