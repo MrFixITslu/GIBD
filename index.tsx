@@ -6,7 +6,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-// CSS is handled by Tailwind CDN in index.html
+// Import main CSS file (PostCSS processed)
+import './src/styles/main.css';
 
 // CRITICAL: Isolate browser wallet extensions before anything else
 import './utils/walletIsolation';

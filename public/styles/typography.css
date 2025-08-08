@@ -1,0 +1,285 @@
+/* Typography Classes */
+
+/* Font Families */
+.font-sans {
+  font-family: var(--font-family-sans);
+}
+
+.font-display {
+  font-family: var(--font-family-display);
+}
+
+/* Font Sizes */
+.text-xs {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-loose);
+}
+
+.text-sm {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-loose);
+}
+
+.text-base {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-extra-loose);
+}
+
+.text-lg {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-extra-loose);
+}
+
+.text-xl {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-normal);
+}
+
+.text-3xl {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-snug);
+}
+
+.text-4xl {
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-5xl {
+  font-size: var(--font-size-5xl);
+  line-height: var(--line-height-tight);
+}
+
+.text-6xl {
+  font-size: var(--font-size-6xl);
+  line-height: 1;
+}
+
+/* Font Weights */
+.font-light {
+  font-weight: 300;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-extrabold {
+  font-weight: 800;
+}
+
+/* Text Colors */
+.text-primary {
+  color: var(--color-primary-600);
+}
+
+.text-primary-light {
+  color: var(--color-primary-400);
+}
+
+.text-primary-dark {
+  color: var(--color-primary-800);
+}
+
+.text-secondary {
+  color: var(--color-secondary-600);
+}
+
+.text-success {
+  color: var(--color-success-600);
+}
+
+.text-warning {
+  color: var(--color-warning-600);
+}
+
+.text-error {
+  color: var(--color-error-600);
+}
+
+.text-neutral {
+  color: var(--color-neutral-600);
+}
+
+.text-neutral-light {
+  color: var(--color-neutral-400);
+}
+
+.text-neutral-dark {
+  color: var(--color-neutral-800);
+}
+
+.text-white {
+  color: white;
+}
+
+.text-black {
+  color: black;
+}
+
+/* Theme Colors */
+.text-tropical-green {
+  color: var(--color-tropical-green);
+}
+
+.text-sunset-orange {
+  color: var(--color-sunset-orange);
+}
+
+.text-ocean-blue {
+  color: var(--color-ocean-blue);
+}
+
+.text-charcoal-gray {
+  color: var(--color-charcoal-gray);
+}
+
+/* Text Alignment */
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+/* Text Transform */
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.normal-case {
+  text-transform: none;
+}
+
+/* Text Decoration */
+.underline {
+  text-decoration: underline;
+}
+
+.line-through {
+  text-decoration: line-through;
+}
+
+.no-underline {
+  text-decoration: none;
+}
+
+/* Line Height */
+.leading-none {
+  line-height: 1;
+}
+
+.leading-tight {
+  line-height: var(--line-height-tight);
+}
+
+.leading-snug {
+  line-height: var(--line-height-snug);
+}
+
+.leading-normal {
+  line-height: var(--line-height-normal);
+}
+
+.leading-relaxed {
+  line-height: var(--line-height-relaxed);
+}
+
+.leading-loose {
+  line-height: var(--line-height-loose);
+}
+
+/* Letter Spacing */
+.tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.tracking-normal {
+  letter-spacing: 0;
+}
+
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.tracking-widest {
+  letter-spacing: 0.1em;
+}
+
+/* Text Overflow */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
+}
+
+.text-clip {
+  text-overflow: clip;
+}
+
+/* White Space */
+.whitespace-normal {
+  white-space: normal;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
+.whitespace-pre {
+  white-space: pre;
+}
+
+.whitespace-pre-line {
+  white-space: pre-line;
+}
+
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
