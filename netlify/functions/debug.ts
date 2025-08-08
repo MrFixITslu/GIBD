@@ -1,9 +1,18 @@
 import { Handler } from '@netlify/functions';
 
 export const handler: Handler = async (event, context) => {
-  // Enable CORS
+  // Enable CORS with specific origin for production
+  const allowedOrigins = [
+    'https://v79sl.online',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  
+  const origin = event.headers.origin || event.headers.Origin;
+  const corsOrigin = origin && allowedOrigins.includes(origin) ? origin : 'https://v79sl.online';
+  
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Content-Type': 'application/json',
