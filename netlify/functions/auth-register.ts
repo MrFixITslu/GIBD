@@ -1,10 +1,7 @@
 import { Handler } from '@netlify/functions';
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
 import { neon } from '@netlify/neon';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-
-const sql = neon(process.env.NETLIFY_DATABASE_URL!);
 
 export const handler: Handler = async (event, context) => {
   // Enable CORS
@@ -38,10 +35,27 @@ export const handler: Handler = async (event, context) => {
         statusCode: 500,
         headers,
         body: JSON.stringify({ 
-          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.' 
+          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.',
+          error: 'MISSING_DATABASE_URL'
         }),
       };
     }
+
+    // Check if JWT secret is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Authentication not configured. Please set JWT_SECRET environment variable.',
+          error: 'MISSING_JWT_SECRET'
+        }),
+      };
+    }
+
+    // Initialize database connection using simplified syntax
+    const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
 
     const { email, password } = JSON.parse(event.body || '{}');
 
@@ -65,30 +79,19 @@ export const handler: Handler = async (event, context) => {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, 12);
-    const userId = uuidv4();
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // Create user
-    await sql`
-      INSERT INTO users (id, email, password_hash)
-      VALUES (${userId}, ${email}, ${passwordHash})
+    const [user] = await sql`
+      INSERT INTO users (email, password_hash)
+      VALUES (${email}, ${passwordHash})
+      RETURNING id, email
     `;
-
-    // Check if JWT secret is configured
-    if (!process.env.JWT_SECRET) {
-      console.error('JWT_SECRET is not configured');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          message: 'Authentication not configured. Please set JWT_SECRET environment variable.' 
-        }),
-      };
-    }
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId, email },
+      { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -97,16 +100,40 @@ export const handler: Handler = async (event, context) => {
       statusCode: 201,
       headers,
       body: JSON.stringify({
-        user: { id: userId, email },
+        user: { id: user.id, email: user.email },
         token,
       }),
     };
   } catch (error) {
     console.error('Registration error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    let errorCode = 'UNKNOWN_ERROR';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('connection')) {
+        errorMessage = 'Database connection failed. Please check your database configuration.';
+        errorCode = 'DATABASE_CONNECTION_ERROR';
+      } else if (error.message.includes('authentication')) {
+        errorMessage = 'Database authentication failed. Please check your database credentials.';
+        errorCode = 'DATABASE_AUTH_ERROR';
+      } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        errorMessage = 'Database tables not found. Please run the database setup script.';
+        errorCode = 'MISSING_TABLES';
+      } else {
+        errorMessage = `Registration error: ${error.message}`;
+        errorCode = 'REGISTRATION_ERROR';
+      }
+    }
+    
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Internal server error' }),
+      body: JSON.stringify({ 
+        message: errorMessage,
+        error: errorCode
+      }),
     };
   }
 };

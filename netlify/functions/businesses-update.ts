@@ -1,15 +1,14 @@
 import { Handler } from '@netlify/functions';
+import * as jwt from 'jsonwebtoken';
 import { neon } from '@netlify/neon';
-import jwt from 'jsonwebtoken';
-
-const sql = neon(process.env.NETLIFY_DATABASE_URL!);
 
 export const handler: Handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -28,70 +27,122 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
-    // Verify authorization
+    // Check if database URL is configured
+    if (!process.env.NETLIFY_DATABASE_URL) {
+      console.error('NETLIFY_DATABASE_URL is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.',
+          error: 'MISSING_DATABASE_URL'
+        }),
+      };
+    }
+
+    // Check if JWT secret is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Authentication not configured. Please set JWT_SECRET environment variable.',
+          error: 'MISSING_JWT_SECRET'
+        }),
+      };
+    }
+
+    // Initialize database connection using simplified syntax
+    const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
+
+    // Verify JWT token
     const authHeader = event.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return {
         statusCode: 401,
         headers,
-        body: JSON.stringify({ message: 'Authorization required' }),
+        body: JSON.stringify({ message: 'Authentication required' }),
       };
     }
 
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string };
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    } catch (jwtError) {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ message: 'Invalid token' }),
+      };
+    }
 
-    // Extract business ID from path
     const businessId = event.path.split('/').pop();
     const updateData = JSON.parse(event.body || '{}');
 
-    // Check if business exists and user owns it
+    // Update business
     const [business] = await sql`
-      SELECT owner_id FROM businesses WHERE id = ${businessId}
+      UPDATE businesses 
+      SET 
+        name = COALESCE(${updateData.name}, name),
+        category = COALESCE(${updateData.category}, category),
+        description = COALESCE(${updateData.description}, description),
+        contact = COALESCE(${updateData.contact}, contact),
+        location = COALESCE(${updateData.location}, location),
+        coordinates = COALESCE(${updateData.coordinates}, coordinates),
+        hours = COALESCE(${updateData.hours}, hours),
+        images = COALESCE(${updateData.images}, images),
+        tags = COALESCE(${updateData.tags}, tags),
+        offers = COALESCE(${updateData.offers}, offers),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${businessId} AND owner_id = ${decoded.userId}
+      RETURNING *
     `;
 
     if (!business) {
       return {
         statusCode: 404,
         headers,
-        body: JSON.stringify({ message: 'Business not found' }),
+        body: JSON.stringify({ message: 'Business not found or access denied' }),
       };
     }
-
-    if (business.owner_id !== decoded.userId) {
-      return {
-        statusCode: 403,
-        headers,
-        body: JSON.stringify({ message: 'Not authorized to update this business' }),
-      };
-    }
-
-    // Update business
-    await sql`
-      UPDATE businesses 
-      SET name = ${updateData.name}, description = ${updateData.description}
-      WHERE id = ${businessId}
-    `;
-
-    // Return updated business
-    const [updatedBusiness] = await sql`
-      SELECT 
-        id, owner_id as "ownerId", name, category, description, contact, location,
-        coordinates, hours, images, rating, tags, offers, votes
-      FROM businesses WHERE id = ${businessId}
-    `;
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(updatedBusiness),
+      body: JSON.stringify(business),
     };
   } catch (error) {
     console.error('Update business error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    let errorCode = 'UNKNOWN_ERROR';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('connection')) {
+        errorMessage = 'Database connection failed. Please check your database configuration.';
+        errorCode = 'DATABASE_CONNECTION_ERROR';
+      } else if (error.message.includes('authentication')) {
+        errorMessage = 'Database authentication failed. Please check your database credentials.';
+        errorCode = 'DATABASE_AUTH_ERROR';
+      } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        errorMessage = 'Database tables not found. Please run the database setup script.';
+        errorCode = 'MISSING_TABLES';
+      } else {
+        errorMessage = `Business update error: ${error.message}`;
+        errorCode = 'BUSINESS_UPDATE_ERROR';
+      }
+    }
+    
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Internal server error' }),
+      body: JSON.stringify({ 
+        message: errorMessage,
+        error: errorCode
+      }),
     };
   }
 };

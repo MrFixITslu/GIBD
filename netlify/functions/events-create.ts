@@ -1,16 +1,14 @@
 import { Handler } from '@netlify/functions';
+import * as jwt from 'jsonwebtoken';
 import { neon } from '@netlify/neon';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-
-const sql = neon(process.env.NETLIFY_DATABASE_URL!);
 
 export const handler: Handler = async (event, context) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -29,40 +27,73 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
-    // Verify authorization
+    // Check if database URL is configured
+    if (!process.env.NETLIFY_DATABASE_URL) {
+      console.error('NETLIFY_DATABASE_URL is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.',
+          error: 'MISSING_DATABASE_URL'
+        }),
+      };
+    }
+
+    // Check if JWT secret is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Authentication not configured. Please set JWT_SECRET environment variable.',
+          error: 'MISSING_JWT_SECRET'
+        }),
+      };
+    }
+
+    // Initialize database connection using simplified syntax
+    const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
+
+    // Verify JWT token
     const authHeader = event.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return {
         statusCode: 401,
         headers,
-        body: JSON.stringify({ message: 'Authorization required' }),
+        body: JSON.stringify({ message: 'Authentication required' }),
       };
     }
 
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string };
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    } catch (jwtError) {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ message: 'Invalid token' }),
+      };
+    }
 
     const eventData = JSON.parse(event.body || '{}');
-    const eventId = uuidv4();
+    const { title, date, time, description, image, businessId } = eventData;
 
-    // Generate a placeholder image URL
-    const imageUrl = `https://picsum.photos/400/300?random=${eventId}`;
+    if (!title || !date) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ message: 'Title and date are required' }),
+      };
+    }
 
-    // Insert event into database
-    await sql`
-      INSERT INTO events (
-        id, title, date, time, description, business_id, image
-      ) VALUES (
-        ${eventId}, ${eventData.title}, ${eventData.date}, ${eventData.time},
-        ${eventData.description}, ${eventData.businessId}, ${imageUrl}
-      )
-    `;
-
-    // Return the created event
+    // Create event
     const [newEvent] = await sql`
-      SELECT 
-        id, title, date, time, description, business_id as "businessId", image
-      FROM events WHERE id = ${eventId}
+      INSERT INTO events (business_id, title, date, time, description, image)
+      VALUES (${businessId}, ${title}, ${date}, ${time || null}, ${description || null}, ${image || null})
+      RETURNING *
     `;
 
     return {
@@ -72,10 +103,34 @@ export const handler: Handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Create event error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    let errorCode = 'UNKNOWN_ERROR';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('connection')) {
+        errorMessage = 'Database connection failed. Please check your database configuration.';
+        errorCode = 'DATABASE_CONNECTION_ERROR';
+      } else if (error.message.includes('authentication')) {
+        errorMessage = 'Database authentication failed. Please check your database credentials.';
+        errorCode = 'DATABASE_AUTH_ERROR';
+      } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        errorMessage = 'Database tables not found. Please run the database setup script.';
+        errorCode = 'MISSING_TABLES';
+      } else {
+        errorMessage = `Event creation error: ${error.message}`;
+        errorCode = 'EVENT_CREATION_ERROR';
+      }
+    }
+    
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Internal server error' }),
+      body: JSON.stringify({ 
+        message: errorMessage,
+        error: errorCode
+      }),
     };
   }
 };

@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { neon } from '@netlify/neon';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
 
 export const handler: Handler = async (event, context) => {
   // Enable CORS
