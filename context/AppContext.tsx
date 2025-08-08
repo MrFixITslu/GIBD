@@ -142,13 +142,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        const [bizData, eventData] = await Promise.all([
-          api.getBusinesses(),
-          api.getEvents(),
-        ]);
+        setAppError(null);
+        
+        // Try to fetch data with individual error handling
+        let bizData: Business[] = [];
+        let eventData: Event[] = [];
+        
+        try {
+          bizData = await api.getBusinesses();
+        } catch (bizError) {
+          console.warn("Failed to fetch businesses:", bizError);
+          // Don't throw, just use empty array
+        }
+        
+        try {
+          eventData = await api.getEvents();
+        } catch (eventError) {
+          console.warn("Failed to fetch events:", eventError);
+          // Don't throw, just use empty array
+        }
+        
         setBusinesses(bizData);
         setEvents(eventData);
-        setAppError(null);
+        
+        // Only show error if both failed
+        if (bizData.length === 0 && eventData.length === 0) {
+          setAppError("Unable to load data. The app will work with limited functionality. Check your Netlify function configuration and environment variables.");
+        }
         
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
@@ -170,10 +190,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           } else if (error.message.includes('Unexpected token')) {
             errorMessage = "Server error: The backend is returning an invalid response. Please check if the server is running correctly.";
           } else if (error.message.includes('404')) {
-            errorMessage = "API endpoint not found. Please check if the backend server is properly configured.";
+            errorMessage = "API endpoint not found. Please check if the Netlify functions are deployed correctly.";
           } else if (error.message.includes('Server returned HTML')) {
             errorMessage = "Server configuration error: The backend is returning HTML instead of JSON. Please check your Netlify function configuration.";
-          } else if (error.message.includes('Serverless function error')) {
+          } else if (error.message.includes('Netlify function error')) {
             errorMessage = "Backend function error: The serverless function failed to execute. This could be due to missing environment variables.";
           } else {
             errorMessage = `Connection error: ${error.message}`;

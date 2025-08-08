@@ -191,8 +191,29 @@
 }
 </script>
   
-</head>
+  </head>
   <body class="bg-sandy-beige text-charcoal-gray antialiased">
+    <!-- Prevent wallet extension errors -->
+    <script>
+      // Prevent wallet extension errors by adding defensive checks
+      if (typeof window !== 'undefined') {
+        // Suppress crypto wallet extension errors
+        window.addEventListener('error', function(e) {
+          if (e.filename && e.filename.includes('inpage.js')) {
+            e.preventDefault();
+            return false;
+          }
+        });
+        
+        // Suppress unhandled promise rejections from wallet extensions
+        window.addEventListener('unhandledrejection', function(e) {
+          if (e.reason && e.reason.toString().includes('BinanceChain')) {
+            e.preventDefault();
+            return false;
+          }
+        });
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

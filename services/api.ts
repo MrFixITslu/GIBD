@@ -3,6 +3,9 @@ import { Business, Event, UpdatableBusinessData } from '../types';
 // API URL for Netlify functions
 const API_BASE_URL = import.meta.env['VITE_API_URL'] || '/api';
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 // Remove mock data imports since we're using only real backend now
 
 const handleResponse = async (response: Response) => {
@@ -10,46 +13,53 @@ const handleResponse = async (response: Response) => {
     let errorMessage = `HTTP error! status: ${response.status}`;
     
     try {
-      const error = await response.json();
-      errorMessage = error.message || errorMessage;
+      const contentType = response.headers.get('content-type');
       
-      // Handle specific error codes from our Netlify functions
-      if (error.error) {
-        switch (error.error) {
-          case 'MISSING_DATABASE_URL':
-            errorMessage = 'Database not configured. Please set NETLIFY_DATABASE_URL environment variable in your Netlify dashboard.';
-            break;
-          case 'DATABASE_CONNECTION_FAILED':
-            errorMessage = 'Database connection failed. Please check your database configuration and credentials.';
-            break;
-          case 'DATABASE_AUTH_ERROR':
-            errorMessage = 'Database authentication failed. Please check your database credentials.';
-            break;
-          case 'MISSING_TABLES':
-            errorMessage = 'Database tables not found. Please run the database setup script.';
-            break;
-          default:
-            errorMessage = error.message || errorMessage;
+      // Check if response is JSON before trying to parse
+      if (contentType && contentType.includes('application/json')) {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+        
+        // Handle specific error codes from our Netlify functions
+        if (error.error) {
+          switch (error.error) {
+            case 'MISSING_DATABASE_URL':
+              errorMessage = 'Database not configured. Please set NETLIFY_DATABASE_URL environment variable in your Netlify dashboard.';
+              break;
+            case 'DATABASE_CONNECTION_FAILED':
+              errorMessage = 'Database connection failed. Please check your database configuration and credentials.';
+              break;
+            case 'DATABASE_AUTH_ERROR':
+              errorMessage = 'Database authentication failed. Please check your database credentials.';
+              break;
+            case 'MISSING_TABLES':
+              errorMessage = 'Database tables not found. Please run the database setup script.';
+              break;
+            default:
+              errorMessage = error.message || errorMessage;
+          }
         }
-      }
-    } catch (parseError) {
-      // If response is not JSON (like HTML error page), try to get text
-      try {
+      } else {
+        // Handle non-JSON responses (HTML error pages)
         const text = await response.text();
         if (text.includes('<!DOCTYPE')) {
-          errorMessage = `Server returned HTML instead of JSON. Status: ${response.status}. This usually means the API endpoint doesn't exist or the server is not running.`;
+          errorMessage = `Server returned HTML instead of JSON. Status: ${response.status}. This usually means the API endpoint doesn't exist or there's a routing issue in Netlify.`;
         } else if (text.includes('Function invocation failed')) {
-          errorMessage = `Serverless function error: The backend function failed to execute. This could be due to missing environment variables or database connection issues.`;
+          errorMessage = `Netlify function error: The serverless function failed to execute. Check environment variables and function configuration.`;
         } else if (text.includes('Database connection not configured')) {
           errorMessage = `Database not configured. Please set up the database connection in your Netlify environment variables.`;
         } else if (text.includes('Database connection failed')) {
           errorMessage = `Database connection failed. Please check your database configuration and credentials.`;
+        } else if (response.status === 404) {
+          errorMessage = `API endpoint not found (404). Check if Netlify functions are deployed correctly.`;
+        } else if (response.status === 503) {
+          errorMessage = `Service unavailable (503). Netlify functions might be failing to start.`;
         } else {
           errorMessage = `Server error: ${text.substring(0, 100)}...`;
         }
-      } catch (textError) {
-        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       }
+    } catch (parseError) {
+      errorMessage = `HTTP ${response.status}: ${response.statusText}. Failed to parse error response.`;
     }
     
     throw new Error(errorMessage);
@@ -60,7 +70,12 @@ const handleResponse = async (response: Response) => {
   }
   
   try {
-    return response.json();
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      throw new Error(`Expected JSON response but got ${contentType}`);
+    }
   } catch (parseError) {
     throw new Error('Invalid JSON response from server');
   }
