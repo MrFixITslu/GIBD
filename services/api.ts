@@ -18,6 +18,8 @@ const handleResponse = async (response: Response) => {
         const text = await response.text();
         if (text.includes('<!DOCTYPE')) {
           errorMessage = `Server returned HTML instead of JSON. Status: ${response.status}. This usually means the API endpoint doesn't exist or the server is not running.`;
+        } else if (text.includes('Function invocation failed')) {
+          errorMessage = `Serverless function error: The backend function failed to execute. This could be due to missing environment variables or database connection issues.`;
         } else {
           errorMessage = `Server error: ${text.substring(0, 100)}...`;
         }
