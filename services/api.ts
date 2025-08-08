@@ -1,7 +1,7 @@
-import { Business, Event, UpdatableBusinessData, User, BlogPost, ItinerarySuggestions, NewsArticle } from '../types';
+import { Business, Event, UpdatableBusinessData } from '../types';
 
 // API URL for Netlify functions
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env['VITE_API_URL'] || '/api';
 
 // Remove mock data imports since we're using only real backend now
 

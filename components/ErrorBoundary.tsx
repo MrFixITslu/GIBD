@@ -21,9 +21,9 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       console.error('Error caught by boundary:', error, errorInfo);
     }
     
@@ -32,13 +32,13 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   // Reset error state when props change
-  componentDidUpdate(prevProps: Props) {
+  override componentDidUpdate(prevProps: Props) {
     if (prevProps.children !== this.props.children) {
       this.setState({ hasError: false, error: undefined });
     }
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return this.props.fallback || (

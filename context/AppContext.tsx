@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, useMemo } from 'react';
-import { Language, Translations, Business, User, Event, UpdatableBusinessData } from '../types';
+import { Language, Translations, Business, Event, UpdatableBusinessData } from '../types';
 import * as api from '../services/api';
 
 const translations: Translations = {
@@ -189,7 +189,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const t = useCallback((key: string, replacements: {[key:string]: string} = {}): string => {
     let translation = translations[key]?.[language] || key;
     Object.keys(replacements).forEach(rKey => {
-      translation = translation.replace(`{${rKey}}`, replacements[rKey]);
+      const value = replacements[rKey];
+      if (value !== undefined) {
+        translation = translation.replace(`{${rKey}}`, value);
+      }
     });
     return translation;
   }, [language]);

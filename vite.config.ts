@@ -5,8 +5,9 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.API_KEY': JSON.stringify(env['GEMINI_API_KEY']),
+        'process.env.GEMINI_API_KEY': JSON.stringify(env['GEMINI_API_KEY']),
+        global: 'globalThis',
       },
       resolve: {
         alias: {
@@ -26,6 +27,7 @@ export default defineConfig(({ mode }) => {
         },
         sourcemap: mode === 'development',
         minify: mode === 'production',
+        target: 'es2020',
       },
       server: {
         port: 3000,
@@ -35,6 +37,9 @@ export default defineConfig(({ mode }) => {
           'X-Frame-Options': 'DENY',
           'X-XSS-Protection': '1; mode=block',
         }
+      },
+      optimizeDeps: {
+        include: ['react', 'react-dom', 'react-router-dom']
       }
     };
 });

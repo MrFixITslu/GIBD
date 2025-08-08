@@ -6,7 +6,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './src/styles/design-system.css';
+// CSS is handled by Tailwind CDN in index.html
 
 // 1. Locate the root DOM node. The React application will be rendered inside this element.
 // This element is defined in `index.html`.
