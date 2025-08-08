@@ -1,0 +1,59 @@
+# 🔐 PRODUCTION ENVIRONMENT TEMPLATE
+# Copy this file to .env.production and fill in the actual values
+# NEVER commit actual secrets to version control
+
+# ================================
+# 🌐 API Configuration
+# ================================
+# Full URL to your API endpoint (if using external API)
+# Example: https://api.yourdomain.com
+VITE_API_URL=
+
+# ================================
+# 🤖 AI Services
+# ================================
+# Google Gemini API Key for AI features
+# Get from: https://console.cloud.google.com/apis/credentials
+VITE_GEMINI_API_KEY=
+
+# ================================
+# 🗺️ Maps & Location
+# ================================
+# Google Maps API Key for map features
+# Get from: https://console.cloud.google.com/apis/credentials
+VITE_GOOGLE_MAPS_API_KEY=
+
+# ================================
+# 🔒 NETLIFY FUNCTIONS (Server-side only)
+# ================================
+# PostgreSQL Database URL (Neon, Supabase, etc.)
+# Format: postgresql://username:password@host:port/database
+NETLIFY_DATABASE_URL=
+
+# JWT Secret for authentication (32+ characters)
+# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=
+
+# CORS allowed origins (production domain)
+# Example: https://yourapp.netlify.app
+CORS_ORIGIN=
+
+# ================================
+# 🛡️ SECURITY NOTES
+# ================================
+# 1. All VITE_ prefixed variables are exposed to the browser
+# 2. Never put secrets in VITE_ variables
+# 3. Use strong, unique passwords and API keys
+# 4. Rotate secrets regularly
+# 5. Use environment-specific keys (don't reuse dev keys in prod)
+
+# ================================
+# 📝 SETUP CHECKLIST
+# ================================
+# □ Set up PostgreSQL database (Neon recommended)
+# □ Create Google Cloud project for API keys
+# □ Enable required APIs (Gemini, Maps)
+# □ Generate strong JWT secret
+# □ Configure CORS for production domain
+# □ Test all endpoints work with production URLs
+# □ Verify no console errors in production build

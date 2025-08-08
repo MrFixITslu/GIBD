@@ -5,20 +5,24 @@ import { vi } from 'vitest';
 global.fetch = vi.fn();
 
 // Mock localStorage
-const localStorageMock = {
+const localStorageMock: Storage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 };
 global.localStorage = localStorageMock;
 
 // Mock sessionStorage
-const sessionStorageMock = {
+const sessionStorageMock: Storage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 };
 global.sessionStorage = sessionStorageMock;
 

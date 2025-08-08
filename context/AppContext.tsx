@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { Language, Translations, Business, Event, UpdatableBusinessData } from '../types';
 import * as api from '../services/api';
+import { logger } from '../utils/logger';
 
 const translations: Translations = {
   // General
@@ -151,14 +152,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         try {
           bizData = await api.getBusinesses();
         } catch (bizError) {
-          console.warn("Failed to fetch businesses:", bizError);
+          logger.warn("Failed to fetch businesses:", bizError);
           // Don't throw, just use empty array
         }
         
         try {
           eventData = await api.getEvents();
         } catch (eventError) {
-          console.warn("Failed to fetch events:", eventError);
+          logger.warn("Failed to fetch events:", eventError);
           // Don't throw, just use empty array
         }
         
@@ -217,8 +218,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const storedToken = localStorage.getItem('gimd-token');
     const storedUser = localStorage.getItem('gimd-user');
     if (storedToken && storedUser) {
-        setToken(storedToken);
-        setCurrentUser(JSON.parse(storedUser));
+        try {
+          const user = JSON.parse(storedUser);
+          // Validate user object structure
+          if (user && typeof user.id === 'string' && typeof user.email === 'string') {
+            setToken(storedToken);
+            setCurrentUser(user);
+          } else {
+            // Clear invalid data
+            localStorage.removeItem('gimd-token');
+            localStorage.removeItem('gimd-user');
+          }
+        } catch (error) {
+          logger.warn('Invalid user data in localStorage, clearing:', error);
+          localStorage.removeItem('gimd-token');
+          localStorage.removeItem('gimd-user');
+        }
     }
   }, []);
 
@@ -226,8 +241,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     let translation = translations[key]?.[language] || key;
     Object.keys(replacements).forEach(rKey => {
       const value = replacements[rKey];
-      if (value !== undefined) {
-        translation = translation.replace(`{${rKey}}`, value);
+      if (value !== undefined && typeof value === 'string') {
+        // Escape HTML to prevent XSS in case translation is used in dangerouslySetInnerHTML
+        const escapedValue = value.replace(/[<>"'&]/g, (match) => {
+          const escapeMap: {[key: string]: string} = {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+            '&': '&amp;'
+          };
+          return escapeMap[match];
+        });
+        translation = translation.replace(`{${rKey}}`, escapedValue);
       }
     });
     return translation;
@@ -291,7 +317,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const voteForBusiness = useCallback(async (businessId: string) => {
     if (votedBusinessIds.has(businessId)) {
-      console.warn("Already voted for this business.");
+      logger.warn("Already voted for this business.");
       return;
     }
     try {

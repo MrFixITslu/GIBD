@@ -3,9 +3,6 @@ import { Business, Event, UpdatableBusinessData } from '../types';
 // API URL for Netlify functions
 const API_BASE_URL = import.meta.env['VITE_API_URL'] || '/api';
 
-// Check if we're in a browser environment
-const isBrowser = typeof window !== 'undefined';
-
 // Remove mock data imports since we're using only real backend now
 
 const handleResponse = async (response: Response) => {
@@ -84,6 +81,9 @@ const handleResponse = async (response: Response) => {
 const getAuthHeaders = (token: string) => ({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
+    // Security headers
+    'X-Requested-With': 'XMLHttpRequest',
+    'Cache-Control': 'no-cache',
 });
 
 // --- Auth ---

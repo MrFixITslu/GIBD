@@ -1,30 +1,43 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, LinkProps } from 'react-router-dom';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface BaseButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
-  as?: 'button' | 'link';
-  to?: string;
   children: React.ReactNode;
+  className?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon,
-  iconPosition = 'left',
-  as = 'button',
-  to,
-  children,
-  className = '',
-  disabled,
-  ...props
-}) => {
+type ButtonAsButton = BaseButtonProps & 
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseButtonProps> & {
+  as?: 'button';
+  to?: never;
+};
+
+type ButtonAsLink = BaseButtonProps & 
+  Omit<LinkProps, keyof BaseButtonProps | 'to'> & {
+  as: 'link';
+  to: string;
+};
+
+export type ButtonProps = ButtonAsButton | ButtonAsLink;
+
+const Button: React.FC<ButtonProps> = (props) => {
+  const {
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    icon,
+    iconPosition = 'left',
+    as = 'button',
+    children,
+    className = '',
+    ...restProps
+  } = props;
+
   const baseClasses = 'btn inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantClasses = {
@@ -57,19 +70,21 @@ const Button: React.FC<ButtonProps> = ({
     </>
   );
 
-  if (as === 'link' && to) {
+  if (as === 'link') {
+    const { to, ...linkProps } = restProps as ButtonAsLink;
     return (
-      <Link to={to} className={classes} {...props}>
+      <Link to={to} className={classes} {...linkProps}>
         {content}
       </Link>
     );
   }
 
+  const { disabled, ...buttonProps } = restProps as ButtonAsButton;
   return (
     <button 
       className={classes} 
       disabled={disabled || loading}
-      {...props}
+      {...buttonProps}
     >
       {content}
     </button>

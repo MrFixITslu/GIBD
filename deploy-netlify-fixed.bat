@@ -40,6 +40,10 @@ echo Step 4: Deploy to Netlify
 echo - Drag the 'dist' folder to Netlify, or
 echo - Connect to Git repository for auto-deployment
 echo.
+echo To test locally before deploying:
+echo   npm run dev
+echo   npm run preview
+echo.
 
 echo ✅ All fixes applied successfully!
 echo.

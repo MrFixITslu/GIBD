@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ROUTES } from './constants';
@@ -7,16 +7,18 @@ import { ROUTES } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
-import HomePage from './pages/HomePage';
-import DirectoryPage from './pages/DirectoryPage';
-import BusinessDetailPage from './pages/BusinessDetailPage';
-import EventsPage from './pages/EventsPage';
-import ItineraryPlannerPage from './pages/ItineraryPlannerPage';
-import DashboardPage from './pages/DashboardPage';
-import NewsPage from './pages/NewsPage';
-import AuthPage from './pages/AuthPage';
-import BusinessRegistrationPage from './pages/BusinessRegistrationPage';
 import Spinner from './components/Spinner';
+
+// Lazy load pages for better performance
+const HomePage = lazy(() => import('./pages/HomePage'));
+const DirectoryPage = lazy(() => import('./pages/DirectoryPage'));
+const BusinessDetailPage = lazy(() => import('./pages/BusinessDetailPage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const ItineraryPlannerPage = lazy(() => import('./pages/ItineraryPlannerPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const NewsPage = lazy(() => import('./pages/NewsPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const BusinessRegistrationPage = lazy(() => import('./pages/BusinessRegistrationPage'));
 
 const AppContent: React.FC = () => {
   const { isLoading, appError } = useAppContext();
@@ -35,17 +37,19 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <Routes>
-      <Route path={ROUTES.HOME} element={<HomePage />} />
-      <Route path={ROUTES.DIRECTORY} element={<DirectoryPage />} />
-      <Route path={ROUTES.BUSINESS_DETAIL} element={<BusinessDetailPage />} />
-      <Route path={ROUTES.EVENTS} element={<EventsPage />} />
-      <Route path={ROUTES.NEWS} element={<NewsPage />} />
-      <Route path={ROUTES.ITINERARY_PLANNER} element={<ItineraryPlannerPage />} />
-      <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
-      <Route path={ROUTES.AUTH} element={<AuthPage />} />
-      <Route path={ROUTES.REGISTER_BUSINESS} element={<BusinessRegistrationPage />} />
-    </Routes>
+    <Suspense fallback={<div className="flex-grow flex items-center justify-center"><Spinner /></div>}>
+      <Routes>
+        <Route path={ROUTES.HOME} element={<HomePage />} />
+        <Route path={ROUTES.DIRECTORY} element={<DirectoryPage />} />
+        <Route path={ROUTES.BUSINESS_DETAIL} element={<BusinessDetailPage />} />
+        <Route path={ROUTES.EVENTS} element={<EventsPage />} />
+        <Route path={ROUTES.NEWS} element={<NewsPage />} />
+        <Route path={ROUTES.ITINERARY_PLANNER} element={<ItineraryPlannerPage />} />
+        <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+        <Route path={ROUTES.AUTH} element={<AuthPage />} />
+        <Route path={ROUTES.REGISTER_BUSINESS} element={<BusinessRegistrationPage />} />
+      </Routes>
+    </Suspense>
   );
 };
 

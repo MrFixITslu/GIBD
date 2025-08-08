@@ -183,37 +183,13 @@
     "react-router-dom": "https://esm.sh/react-router-dom@6.25.1",
     "@google/genai": "https://esm.sh/@google/genai@^1.8.0",
     "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
-    "react/": "https://esm.sh/react@^19.1.0/",
-    "express": "https://esm.sh/express@^5.1.0",
-    "cors": "https://esm.sh/cors@^5.1.0",
-    "jsonwebtoken": "https://esm.sh/jsonwebtoken@^9.0.2"
+    "react/": "https://esm.sh/react@^19.1.0/"
   }
 }
 </script>
   
   </head>
   <body class="bg-sandy-beige text-charcoal-gray antialiased">
-    <!-- Prevent wallet extension errors -->
-    <script>
-      // Prevent wallet extension errors by adding defensive checks
-      if (typeof window !== 'undefined') {
-        // Suppress crypto wallet extension errors
-        window.addEventListener('error', function(e) {
-          if (e.filename && e.filename.includes('inpage.js')) {
-            e.preventDefault();
-            return false;
-          }
-        });
-        
-        // Suppress unhandled promise rejections from wallet extensions
-        window.addEventListener('unhandledrejection', function(e) {
-          if (e.reason && e.reason.toString().includes('BinanceChain')) {
-            e.preventDefault();
-            return false;
-          }
-        });
-      }
-    </script>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
