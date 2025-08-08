@@ -12,6 +12,26 @@ const handleResponse = async (response: Response) => {
     try {
       const error = await response.json();
       errorMessage = error.message || errorMessage;
+      
+      // Handle specific error codes from our Netlify functions
+      if (error.error) {
+        switch (error.error) {
+          case 'MISSING_DATABASE_URL':
+            errorMessage = 'Database not configured. Please set NETLIFY_DATABASE_URL environment variable in your Netlify dashboard.';
+            break;
+          case 'DATABASE_CONNECTION_FAILED':
+            errorMessage = 'Database connection failed. Please check your database configuration and credentials.';
+            break;
+          case 'DATABASE_AUTH_ERROR':
+            errorMessage = 'Database authentication failed. Please check your database credentials.';
+            break;
+          case 'MISSING_TABLES':
+            errorMessage = 'Database tables not found. Please run the database setup script.';
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
+        }
+      }
     } catch (parseError) {
       // If response is not JSON (like HTML error page), try to get text
       try {

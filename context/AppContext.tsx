@@ -153,20 +153,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
         
-        // Provide more specific error messages
+        // Provide more specific error messages based on our enhanced error handling
         let errorMessage = "Could not connect to the server. Please try again later.";
         
         if (error instanceof Error) {
-          if (error.message.includes('Failed to fetch')) {
+          if (error.message.includes('Database not configured')) {
+            errorMessage = "Database not configured. Please set up the database connection in your Netlify environment variables.";
+          } else if (error.message.includes('Database connection failed')) {
+            errorMessage = "Database connection failed. Please check your database configuration and credentials.";
+          } else if (error.message.includes('Database authentication failed')) {
+            errorMessage = "Database authentication failed. Please check your database credentials.";
+          } else if (error.message.includes('Database tables not found')) {
+            errorMessage = "Database tables not found. Please run the database setup script.";
+          } else if (error.message.includes('Failed to fetch')) {
             errorMessage = "Network error: Please check your internet connection and ensure the backend server is running.";
           } else if (error.message.includes('Unexpected token')) {
             errorMessage = "Server error: The backend is returning an invalid response. Please check if the server is running correctly.";
           } else if (error.message.includes('404')) {
             errorMessage = "API endpoint not found. Please check if the backend server is properly configured.";
-          } else if (error.message.includes('Database not configured')) {
-            errorMessage = "Database not configured. Please set up the database connection in your Netlify environment variables.";
-          } else if (error.message.includes('Database connection failed')) {
-            errorMessage = "Database connection failed. Please check your database configuration and credentials.";
+          } else if (error.message.includes('Server returned HTML')) {
+            errorMessage = "Server configuration error: The backend is returning HTML instead of JSON. Please check your Netlify function configuration.";
+          } else if (error.message.includes('Serverless function error')) {
+            errorMessage = "Backend function error: The serverless function failed to execute. This could be due to missing environment variables.";
           } else {
             errorMessage = `Connection error: ${error.message}`;
           }

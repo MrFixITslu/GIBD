@@ -3,8 +3,6 @@ import { neon } from '@netlify/neon';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const sql = neon(process.env.NETLIFY_DATABASE_URL!);
-
 export const handler: Handler = async (event, context) => {
   // Enable CORS
   const headers = {
@@ -37,10 +35,27 @@ export const handler: Handler = async (event, context) => {
         statusCode: 500,
         headers,
         body: JSON.stringify({ 
-          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.' 
+          message: 'Database connection not configured. Please set NETLIFY_DATABASE_URL environment variable.',
+          error: 'MISSING_DATABASE_URL'
         }),
       };
     }
+
+    // Check if JWT secret is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Authentication not configured. Please set JWT_SECRET environment variable.',
+          error: 'MISSING_JWT_SECRET'
+        }),
+      };
+    }
+
+    // Initialize database connection using simplified syntax
+    const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
 
     const { email, password } = JSON.parse(event.body || '{}');
 
@@ -74,18 +89,6 @@ export const handler: Handler = async (event, context) => {
       };
     }
 
-    // Check if JWT secret is configured
-    if (!process.env.JWT_SECRET) {
-      console.error('JWT_SECRET is not configured');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          message: 'Authentication not configured. Please set JWT_SECRET environment variable.' 
-        }),
-      };
-    }
-
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
@@ -103,10 +106,34 @@ export const handler: Handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Login error:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    let errorCode = 'UNKNOWN_ERROR';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('connection')) {
+        errorMessage = 'Database connection failed. Please check your database configuration.';
+        errorCode = 'DATABASE_CONNECTION_ERROR';
+      } else if (error.message.includes('authentication')) {
+        errorMessage = 'Database authentication failed. Please check your database credentials.';
+        errorCode = 'DATABASE_AUTH_ERROR';
+      } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        errorMessage = 'Database tables not found. Please run the database setup script.';
+        errorCode = 'MISSING_TABLES';
+      } else {
+        errorMessage = `Authentication error: ${error.message}`;
+        errorCode = 'AUTH_ERROR';
+      }
+    }
+    
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Internal server error' }),
+      body: JSON.stringify({ 
+        message: errorMessage,
+        error: errorCode
+      }),
     };
   }
 };
