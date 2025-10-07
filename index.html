@@ -2,97 +2,142 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gros-Islet Business Directory</title>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/styles/main.css">
-
-    <!-- Accessibility Styles -->
+    <title>InGrosIslet | Your Complete Guide to Gros Islet, St. Lucia</title>
+    <meta name="description" content="Discover the best of Gros Islet, St. Lucia. Find top restaurants, hotels, local businesses, skilled workers, and plan your perfect trip with our AI-powered guide. Your essential resource for tourism, community news, and events in Gros-Islet.">
+    <meta name="keywords" content="Gros Islet, St. Lucia, Rodney Bay, tourism, travel guide, things to do, restaurants, hotels, st lucia resorts, gros islet street party, pigeon island">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
     <style>
-      .skip-link {
-        position: absolute;
-        top: -40px;
-        left: 6px;
-        background: #000;
-        color: white;
-        padding: 8px;
-        text-decoration: none;
-        border-radius: 4px;
-        z-index: 1000;
-        transition: top 0.3s;
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
-      .skip-link:focus {
-        top: 6px;
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(1rem); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes scale-up {
+        from { transform: scale(0.95); opacity: 0.8; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+      }
+      .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+      .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
+      .animate-scale-up { animation: scale-up 0.3s ease-out forwards; }
+      .animate-shake { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
+      
+      .map-view-container {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 200px); /* Adjust height as needed */
+      }
+      .leaflet-map {
+        width: 100%;
+        height: 100%;
+        border-radius: 1.5rem;
+        z-index: 1;
+      }
+      .map-filters {
+        position: absolute;
+        top: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem;
+        border-radius: 9999px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+      }
+      .custom-map-marker svg {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      }
+      .map-popup {
+        font-family: sans-serif;
+        text-align: center;
+      }
+      .popup-image {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .popup-title {
+        font-size: 1rem;
+        font-weight: bold;
+        margin: 0;
+      }
+      .popup-category {
+        font-size: 0.75rem;
+        color: #666;
+        margin: 4px 0;
+      }
+      .popup-button {
+        margin-top: 8px;
+        padding: 6px 12px;
+        border: none;
+        background-color: #000;
+        color: #fff;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+      }
+      .popup-button:hover {
+        background-color: #333;
       }
     </style>
-
-    <!-- ES Module Import Map -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "InGrosIslet",
+      "url": "https://www.ingrosislet.com/",
+      "description": "Your complete guide to discovering businesses, events, and community life in Gros Islet, St. Lucia.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.ingrosislet.com/?s={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@18.2.0",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.25.1",
-    "@google/genai": "https://esm.sh/@google/genai@^1.8.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
-    "react/": "https://esm.sh/react@^19.1.0/"
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "lucide-react": "https://esm.sh/lucide-react@0.378.0?external=react",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.17.0",
+    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom",
+    "react-hot-toast": "https://esm.sh/react-hot-toast@2.4.1?external=react"
   }
 }
 </script>
-  
-  </head>
-  <body class="app-body">
-    <!-- CRITICAL: Wallet isolation MUST run before any other scripts -->
-    <script>
-      (function() {
-        'use strict';
-        
-        // Block wallet providers IMMEDIATELY
-        const WALLET_PROVIDERS = ['ethereum', 'BinanceChain', 'binance', 'web3', 'trustwallet', 'coinbaseWallet', 'phantom', 'solana', 'okxwallet', 'brave'];
-        
-        WALLET_PROVIDERS.forEach(provider => {
-          try {
-            Object.defineProperty(window, provider, {
-              get: () => undefined,
-              set: () => {},
-              configurable: false,
-              enumerable: false
-            });
-          } catch (e) {}
-        });
-        
-        // Suppress wallet errors IMMEDIATELY
-        const originalError = window.onerror;
-        window.onerror = function(message, source, lineno, colno, error) {
-          if (source && (source.includes('inpage.js') || source.includes('contentscript.js') || source.includes('pageWorld.js'))) {
-            console.debug('[Early-WalletBlock] Suppressed:', message);
-            return true; // Prevent default error handling
-          }
-          return originalError ? originalError.apply(this, arguments) : false;
-        };
-        
-        // Suppress unhandled rejections IMMEDIATELY
-        window.addEventListener('unhandledrejection', function(event) {
-          const reason = String(event.reason || '');
-          if (reason.includes('BinanceChain') || reason.includes('ethereum') || reason.includes('wallet') || reason.includes('isTrust') || reason.includes('type')) {
-            console.debug('[Early-WalletBlock] Suppressed promise rejection:', reason);
-            event.preventDefault();
-            return false;
-          }
-        });
-        
-        console.info('[Early-WalletBlock] Wallet isolation active');
-      })();
-    </script>
-    
-    <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
